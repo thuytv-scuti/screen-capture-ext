@@ -1,10 +1,10 @@
 <img src="src/assets/img/icon-128.png" width="64"/>
 
+# thuytv notes
 
-# thuytv notes 
 - on target app, listen to new custom even on window object:
-  + name: 'image:captured' 
-  + data: event.detail => { image: base64String, url: string }
+  - name: 'image:captured'
+  - data: event.detail => { image: base64String, url: string }
 
 # Chrome Extension Boilerplate with React 17 and Webpack 5
 

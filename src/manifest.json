@@ -21,6 +21,6 @@
       "matches": [ "*://*/*" ]
     }
   ],
-  "permissions": ["tabs", "activeTab", "desktopCapture", "scripting"],
-  "host_permissions": ["http://*/*", "https://*/*", "<all_urls>", ""]
+  "permissions": ["tabs", "activeTab", "scripting"],
+  "host_permissions": ["http://*/*", "https://*/*", "<all_urls>"]
 }

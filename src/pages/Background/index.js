@@ -17,31 +17,40 @@ chrome.action.onClicked.addListener(async (_) => {
   }
 });
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('[x] runtime message', request, sender);
-});
+async function handleRequestBoards(request, sender, sendResponse) {
+  const { action } = request;
+  if (action === 'request:boards') {
+    const boards = JSON.stringify(await getAllBoards());
+    console.log('[x] board getted', boards);
+    sendResponse(boards);
+  }
+}
+
+chrome.runtime.onMessage.addListener(handleRequestBoards);
+
+function sleep(time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
+function getAllBoards() {
+  return chrome.tabs.query({ url: 'http://localhost:3000/*' });
+}
 
 /**
   @param {string} image
   @param {typeof chrome.tabs[0]} capturedTab
 */
 async function onImageCaptured(image, capturedTab) {
-  const boards = await chrome.tabs.query({ url: 'http://localhost:3000/*' });
-  const popover = await chrome.tabs.create({ url: 'popup.html', active: false });
+  const boards = await getAllBoards();
   await chrome.windows.create({
-    tabId: popover.id,
     type: 'popup',
     focused: true,
-    width: 400,
-    height: 600
+    width: 700,
+    height: 600,
+    top: 150,
+    left: 150,
+    url: `popup.html?windowId=${capturedTab.windowId}&tab=${capturedTab.id}`
   });
-
-  chrome.scripting.executeScript({
-    target: { tabId: popover.id },
-    func: fillPopoverContent,
-    args: [boards],
-  });
-
 
   const dispatchImageCaptured = (_image, _url) => {
     const insertCaptureEvent = new CustomEvent('insert:captured', {
@@ -62,8 +71,6 @@ async function onImageCaptured(image, capturedTab) {
       func: dispatchImageCaptured,
       args: [image, capturedTab.url],
     });
-
-    console.log('[x] dispatch insert event to board', board);
   }
 }
 

@@ -7,7 +7,7 @@ chrome.action.onClicked.addListener(async (_) => {
     return chrome.windows.create({
       type: 'popup',
       focused: true,
-      width: 400,
+      width: 500,
       height: 250,
       top: 150,
       left: 150,

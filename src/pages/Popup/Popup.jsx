@@ -101,7 +101,7 @@ const Popup = () => {
     return (
       <div className="content">
         <div className="alert">
-          No board found!
+        板書が見つかりません。
         </div>
       </div>
     )
@@ -125,7 +125,7 @@ const Popup = () => {
         }
       </div>
       <div className="submit-container">
-        <button className="btn" onClick={_clickInsertImage}> Insert selected </button>
+        <button className="btn" onClick={_clickInsertImage}>挿入</button>
       </div>
     </div>
   );

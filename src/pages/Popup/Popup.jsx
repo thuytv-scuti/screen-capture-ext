@@ -1,46 +1,132 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import './Popup.css';
+import { sendScreenshotToBoard } from '../../utils';
+
+function prettyUrl(url) {
+  if (typeof url !== 'string') {
+    return '';
+  }
+  return url.replace(/(http[s]?:[\/]+(.*?)home\/)|(\/)?(\[?#]?(.*)$)/gm, '');
+}
+
+function retrieveBoardName() {
+  let boardName = '';
+  try {
+    boardName = document.querySelector('.longAndTruncated').textContent;
+  } catch(err) {
+    console.log('[x] ERROR', err);
+  }
+  if (typeof boardName === 'string') {
+    boardName = boardName
+      .replace(/日\s+/, '日 > ')
+      .replace(' : ', ' > ')
+      .replace('朝顔の観察 : ', ' > ');
+  }
+
+  return boardName || '';
+}
 
 const Popup = () => {
   const [boards, setBoards] = React.useState([]);
-  const [image, setImage] = React.useState('');
+  const [screenshot, setScreenshot] = React.useState('');
+  const [pageURL, setPageURL] = React.useState('');
   const [isLoading, setLoading] = React.useState(true);
+  const [isEmpty, setEmpty] = React.useState(false);
+  const [selectedBoards, setSelectedBoards] = React.useState([]);
 
-  useEffect(async () => {
-    const url = new URL(window.location);
-    const windowId = Number(url.searchParams.get('windowId'));
-    chrome.tabs.captureVisibleTab(windowId, {
-      format: 'png',
-    }, setImage);
+  React.useEffect(async () => {
+    const params = (new URL(window.location.href)).searchParams;
+    const isEmpty = Boolean(params.get('isEmpty'));
+    const tabId = Number(params.get('tabId'));
+    try {
+      if (isEmpty) {
+        setEmpty(true);
+        setLoading(false);
 
-    // chrome.tabs.query({ url: '*://*/*/board-digital/*' }).then(setBoards);
-    chrome.tabs.query({ url: '*://*/*' }).then(setBoards);
+        return () => {};
+      }
+
+      const _boards = await chrome.tabs.query({ url: '*://*/*/board-digital/*', status: 'complete' });
+      const scshotTab = await chrome.tabs.get(tabId);
+      const _screenshot = await new Promise(
+        (resolve) => chrome.tabs.captureVisibleTab(scshotTab.windowId, {
+          format: 'png',
+        }, resolve)
+      );
+
+      if (_screenshot && _boards.length > 1) {
+        const boardsWithLabel = await Promise.all(
+          _boards.map(b => chrome.scripting.executeScript({
+            target: { tabId: b.id },
+            func: retrieveBoardName
+          }).then(([{ result }]) => ({...b, boardName: result })))
+        );
+        setScreenshot(_screenshot);
+        setBoards(boardsWithLabel);
+        setPageURL(scshotTab.url);
+        setLoading(false);
+      } else {
+        sendScreenshotToBoard(_boards[0], _screenshot, scshotTab.url);
+        window.close();
+      }
+    } catch(e) {
+      console.log('[x] ERROR: ', e);
+    }
   }, []);
 
-  useEffect(() => {
-    if (image && boards.length > 0) {
-      setLoading(false);
+  const _clickSelection = React.useCallback((selected, board) => {
+    setSelectedBoards((current) => {
+      if (selected === true) {
+        return [...current, board];
+      }
+
+      return current.filter(_board => _board.id !== board.id);
+    });
+  }, []);
+
+  const _clickInsertImage = React.useCallback(() => {
+    for (let i = 0, len = selectedBoards.length; i < len; i++) {
+      const board = selectedBoards[i];
+      sendScreenshotToBoard(board, screenshot, pageURL);
     }
-  }, [image, boards]);
+
+    window.close();
+  }, [selectedBoards, screenshot, pageURL]);
 
   if (isLoading) {
-    return <div className="content"><div className="loader">Loading...</div></div>;
+    return <div style={{ width: 0, height: 0 }} className="content"><div className="loader">Loading...</div></div>;
+  }
+
+  if (isEmpty) {
+    return (
+      <div className="content">
+        <div className="alert">
+          No board found!
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="content">
-      <img className="preview-image" src={image} alt="image" />
+      <img className="preview-image" src={screenshot} alt="image" />
       <div className="board-list">
         {
           boards.map((board, index) => (
-            <label key={index} className="container">{board.url}
-              <input type="checkbox" defaultChecked="checked" />
-              <span className="checkmark"></span>
-            </label>
+          <label key={index} className="container">
+            {board.boardName || prettyUrl(boards.url)}
+            <input
+              onChange={({ target }) => _clickSelection(target.checked, board)}
+              type="checkbox"
+            />
+            <span className="checkmark"></span>
+          </label>
           ))
         }
       </div>
-      <div className="submit-container"> <button className="btn" > Insert selected </button> </div>
+      <div className="submit-container">
+        <button className="btn" onClick={_clickInsertImage}> Insert selected </button>
+      </div>
     </div>
   );
 };

@@ -1,19 +1,35 @@
 {
   "manifest_version": 3,
   "version": "0.0.1",
-  "name": "Eduα Snapshot",
-  "description": "Create snapshot of current tab and insert to Eduα Cloud",
-  "background": { "service_worker": "background.bundle.js" },
+  "name": "Web検索キャプチャ機能",
+  "description": "こちらの機能は、Eduα CloudのWeb版アプリ専用の機能です。Web検索機能と組み合わせることで、ご自身のデジタル板書・ノート上にお好きなWebページのキャプチャ画像（URL付き）の貼り付けが可能になります。",
+  "background": {
+    "service_worker": "background.bundle.js"
+  },
   "action": {},
   "icons": {
     "128": "icon-128.png"
   },
   "web_accessible_resources": [
     {
-      "resources": ["icon-128.png", "icon-34.png", "popup.html"],
-      "matches": [ "*://*/*" ]
+      "resources": [
+        "icon-128.png",
+        "icon-34.png",
+        "popup.html"
+      ],
+      "matches": [
+        "*://*/*"
+      ]
     }
   ],
-  "permissions": ["tabs", "scripting", "activeTab"],
-  "host_permissions": ["http://*/*", "https://*/*", "<all_urls>", ""]
+  "permissions": [
+    "tabs",
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*",
+    "<all_urls>"
+  ]
 }

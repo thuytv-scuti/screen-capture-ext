@@ -46,7 +46,7 @@ const Popup = () => {
         return () => {};
       }
 
-      const _boards = await chrome.tabs.query({ url: '*://*/*/board-digital/*', status: 'complete' });
+      const _boards = await chrome.tabs.query({ url: '*://*/*/board-*/*', status: 'complete' });
       const scshotTab = await chrome.tabs.get(tabId);
       const _screenshot = await new Promise(
         (resolve) => chrome.tabs.captureVisibleTab(scshotTab.windowId, {

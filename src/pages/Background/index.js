@@ -9,7 +9,8 @@ const calculateCenterScreen = async (width, height) => {
 }
 
 chrome.action.onClicked.addListener(async (_) => {
-  const boards = await chrome.tabs.query({ url: '*://*/*/board-digital/*', status: 'complete' });
+  const boards = await chrome.tabs.query({ url: '*://*/*/board-*/*', status: 'complete' });
+  console.log('[x] boards', boards);
   console.log('[x] current window', await chrome.windows.getCurrent());
 
   // no board opening

@@ -192,4 +192,13 @@
   color: rgb(255, 100, 0);
 }
 
+button:hover:disabled,
+button:hover[disabled],
+button:disabled,
+button[disabled]{
+  background-color: #9c27b0;
+  opacity: 0.4;
+  box-shadow: unset;
+  cursor: default;
+}
 

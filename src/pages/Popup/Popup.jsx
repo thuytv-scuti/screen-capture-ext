@@ -125,7 +125,7 @@ const Popup = () => {
         }
       </div>
       <div className="submit-container">
-        <button className="btn" onClick={_clickInsertImage}>挿入</button>
+        <button disabled={selectedBoards.length === 0} className="btn" onClick={_clickInsertImage}>挿入</button>
       </div>
     </div>
   );
